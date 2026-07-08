@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Water Drop | charity: water</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFC700;
+    --yellow-deep: #E6B300;
+    --teal: #00A19D;
+    --teal-dark: #007873;
+    --ink: #00332E;
+    --oil: #6B4A32;
+    --oil-dark: #4A3220;
+    --cream: #F5FBFA;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: var(--ink);
+  }
+
+  #game-root {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(180deg, #E9FBFA 0%, #C7F0EC 45%, #8FDAD3 100%);
+    overflow: hidden;
+  }
+
+  /* ---------- HUD ---------- */
+  .hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 18px 22px;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  .hud-pill {
+    background: rgba(0, 51, 46, 0.85);
+    color: white;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  .hud-pill span.label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--yellow);
+    margin-right: 2px;
+  }
+
+  #lives-pips {
+    display: flex;
+    gap: 4px;
+  }
+  .life-pip {
+    width: 12px; height: 16px;
+    background: var(--yellow);
+    clip-path: polygon(50% 0%, 90% 40%, 90% 100%, 10% 100%, 10% 40%);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .life-pip.lost { opacity: 0.15; transform: scale(0.7); }
+
+  /* ---------- Start / End overlays ---------- */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #00A19D 0%, #007873 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+    z-index: 100;
+    color: white;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .jerrycan-icon {
+    width: 34px; height: 40px;
+  }
+
+  .brand-name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    color: var(--yellow);
+    text-transform: lowercase;
+  }
+
+  .overlay h1 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 7vw, 52px);
+    margin: 6px 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .overlay p.sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    max-width: 380px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 26px;
+  }
+
+  .btn-primary {
+    background: var(--yellow);
+    color: var(--ink);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 36px;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 6px 0 var(--yellow-deep);
+  }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--yellow-deep); }
+  .btn-primary:hover { transform: translateY(-2px); }
+
+  .btn-secondary {
+    margin-top: 14px;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { border-color: white; }
+
+  .how-to {
+    display: flex;
+    gap: 22px;
+    margin-top: 30px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+  }
+  .how-to div { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 90px; }
+  .how-to .swatch { width: 22px; height: 22px; }
+
+  .impact-line {
+    margin-top: 22px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--yellow);
+    letter-spacing: 0.03em;
+  }
+
+  #end-overlay { display: none; }
+  #end-overlay .score-big {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 64px;
+    color: var(--yellow);
+    line-height: 1;
+    margin: 6px 0 2px;
+  }
+  #end-overlay .score-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 22px;
+  }
+
+  /* ---------- Catcher ---------- */
+  #catcher {
+    position: absolute;
+    bottom: 30px;
+    width: 56px;
+    height: 64px;
+    transform: translateX(-50%);
+    z-index: 20;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.15));
+  }
+
+  /* ---------- Drops ---------- */
+  .drop {
+    position: absolute;
+    width: 26px;
+    height: 32px;
+    clip-path: path("M13 0 C 13 0, 26 20, 26 24 C 26 29, 20 32, 13 32 C 6 32, 0 29, 0 24 C 0 20, 13 0, 13 0 Z");
+    z-index: 15;
+  }
+  .drop.clean {
+    background: linear-gradient(160deg, #B8F3EF 0%, var(--teal) 55%, var(--teal-dark) 100%);
+    box-shadow: inset 3px -4px 6px rgba(0,60,55,0.25), inset -2px 2px 4px rgba(255,255,255,0.5);
+  }
+  .drop.oil {
+    background: linear-gradient(160deg, #8A6A4E 0%, var(--oil) 55%, var(--oil-dark) 100%);
+    box-shadow: inset 3px -4px 6px rgba(0,0,0,0.35), inset -2px 2px 3px rgba(255,255,255,0.15);
+  }
+
+  .float-text {
+    position: absolute;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    z-index: 25;
+    pointer-events: none;
+    animation: floatUp 0.7s ease-out forwards;
+  }
+  .float-text.good { color: var(--teal-dark); }
+  .float-text.bad { color: var(--oil-dark); }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-40px); }
+  }
+
+  /* ---------- Milestone banner ---------- */
+  #milestone {
+    position: absolute;
+    top: 78px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--yellow);
+    color: var(--ink);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    z-index: 40;
+    opacity: 0;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #milestone.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #ripple-bg {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 90px;
+    background: radial-gradient(ellipse at bottom, rgba(0,161,157,0.25) 0%, transparent 70%);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  @media (max-width: 480px) {
+    .how-to { display: none; }
+    .overlay h1 { font-size: 30px; }
+  }
+
+    #start-overlay {
+    display: flex;
+    z-index: 101; /* Ensure it is above the drops */
+  }
+  
+  #start-overlay.active ~ .drop {
+    display: none; /* Hide drops when the start overlay is active */
+  }
+</style>
+</head>
+<body>
+
+<div id="game-root">
+
+  <div id="ripple-bg"></div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-pill"><span class="label">Score</span><span id="score-val">0</span></div>
+    <div class="hud-pill"><span class="label">Time</span><span id="time-val">60</span></div>
+    <div class="hud-pill" id="lives-pill">
+      <span class="label">Lives</span>
+      <div id="lives-pips">
+        <div class="life-pip"></div>
+        <div class="life-pip"></div>
+        <div class="life-pip"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="milestone"></div>
+
+  <!-- Start overlay -->
+  <div class="overlay" id="start-overlay">
+    <div class="brand-row">
+      <svg class="jerrycan-icon" viewBox="0 0 34 40" fill="none">
+        <path d="M8 6h18v4h3a2 2 0 012 2v22a3 3 0 01-3 3H6a3 3 0 01-3-3V12a2 2 0 012-2h3V6z" fill="#FFC700"/>
+        <rect x="12" y="1" width="10" height="6" rx="1.5" fill="#FFC700"/>
+        <rect x="6" y="18" width="22" height="3" fill="#007873" opacity="0.35"/>
+      </svg>
+      <span class="brand-name">charity: water</span>
+    </div>
+    <h1>Water Drop</h1>
+    <p class="sub">Catch clean water before it hits the ground. Dodge the oil &mdash; every polluted drop you grab costs a life.</p>
+    <button class="btn-primary" id="start-btn">Start Game</button>
+    <div class="how-to">
+      <div><div class="drop clean swatch"></div>Catch = +10 pts</div>
+      <div><div class="drop oil swatch"></div>Avoid = &minus;1 life</div>
+      <div>Move your mouse or finger to steer the can</div>
+    </div>
+    <div class="impact-line">100% of public donations go directly to water projects.</div>
+  </div>
+
+  <!-- End overlay -->
+  <div class="overlay" id="end-overlay">
+    <div class="brand-row">
+      <svg class="jerrycan-icon" viewBox="0 0 34 40" fill="none">
+        <path d="M8 6h18v4h3a2 2 0 012 2v22a3 3 0 01-3 3H6a3 3 0 01-3-3V12a2 2 0 012-2h3V6z" fill="#FFC700"/>
+        <rect x="12" y="1" width="10" height="6" rx="1.5" fill="#FFC700"/>
+      </svg>
+      <span class="brand-name">charity: water</span>
+    </div>
+    <div class="score-big" id="final-score">0</div>
+    <div class="score-label" id="end-reason">points collected</div>
+    <p class="sub" id="end-message">Every drop counts &mdash; just like every donation.</p>
+    <button class="btn-primary" id="restart-btn">Play Again</button>
+    <button class="btn-secondary" onclick="window.open('https://www.charitywater.org','_blank')">Donate at charitywater.org &rarr;</button>
+  </div>
+
+  <!-- Catcher (jerry can) -->
+  <svg id="catcher" viewBox="0 0 34 40" fill="none">
+    <path d="M8 6h18v4h3a2 2 0 012 2v22a3 3 0 01-3 3H6a3 3 0 01-3-3V12a2 2 0 012-2h3V6z" fill="#FFC700"/>
+    <rect x="12" y="1" width="10" height="6" rx="1.5" fill="#FFC700"/>
+    <rect x="6" y="18" width="22" height="3" fill="#007873" opacity="0.35"/>
+  </svg>
+
+</div>
+
+<script>
+/* ============================================================
+   WATER DROP — charity: water prototype
+   Everything below is one JS "game loop":
+   1. spawn drops on a timer
+   2. move them down every frame
+   3. check collisions against the catcher
+   4. update score / lives / time
+   5. end the game when time or lives run out
+   ============================================================ */
+
+const root = document.getElementById('game-root');
+const catcher = document.getElementById('catcher');
+const scoreVal = document.getElementById('score-val');
+const timeVal = document.getElementById('time-val');
+const livesPips = document.querySelectorAll('.life-pip');
+const milestoneEl = document.getElementById('milestone');
+const startOverlay = document.getElementById('start-overlay');
+const endOverlay = document.getElementById('end-overlay');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const finalScoreEl = document.getElementById('final-score');
+const endReasonEl = document.getElementById('end-reason');
+const endMessageEl = document.getElementById('end-message');
+
+// ---- Tunable settings: change these numbers to rebalance the game ----
+const GAME_LENGTH = 60;        // seconds
+const START_LIVES = 3;
+const POINTS_PER_DROP = 10;
+const OIL_CHANCE = 0.22;       // 22% of drops are pollutants
+const SPAWN_INTERVAL_START = 900;  // ms between drops at game start
+const SPAWN_INTERVAL_MIN = 380;    // fastest spawn rate reached
+const FALL_SPEED_START = 2.4;      // px per frame
+const FALL_SPEED_MAX = 5.2;
+
+// Milestones: [score threshold, message shown]
+const MILESTONES = [
+  [50, "50 pts — that's a bucket carried, not spilled 💧"],
+  [100, "100 pts — 1 person's daily drinking water 💛"],
+  [200, "200 pts — you'd fund a hand-pump repair kit"],
+  [350, "350 pts — clean water reaching a whole family"],
+  [500, "500 pts! You're playing like a real water hero"],
+];
+
+let score = 0;
+let lives = START_LIVES;
+let timeLeft = GAME_LENGTH;
+let running = false;
+let catcherX = window.innerWidth / 2;
+let spawnTimer = null;
+let countdownTimer = null;
+let rafId = null;
+let hitMilestones = new Set();
+let drops = []; // {el, x, y, speed, type}
+
+// ---- Catcher movement (mouse + touch + keyboard) ----
+function setCatcherX(x) {
+  const w = root.clientWidth;
+  catcherX = Math.max(28, Math.min(w - 28, x));
+  catcher.style.left = catcherX + 'px';
+}
+
+root.addEventListener('mousemove', (e) => setCatcherX(e.clientX));
+root.addEventListener('touchmove', (e) => {
+  setCatcherX(e.touches[0].clientX);
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('keydown', (e) => {
+  if (!running) return;
+  if (e.key === 'ArrowLeft') setCatcherX(catcherX - 30);
+  if (e.key === 'ArrowRight') setCatcherX(catcherX + 30);
+});
+
+// ---- Spawning drops ----
+function spawnDrop() {
+  const isOil = Math.random() < OIL_CHANCE;
+  const el = document.createElement('div');
+  el.className = 'drop ' + (isOil ? 'oil' : 'clean');
+  const x = 30 + Math.random() * (root.clientWidth - 60);
+  el.style.left = x + 'px';
+  el.style.top = '-40px';
+  root.appendChild(el);
+
+  const progress = 1 - (timeLeft / GAME_LENGTH); // 0 -> 1 over the game
+  const speed = FALL_SPEED_START + (FALL_SPEED_MAX - FALL_SPEED_START) * progress;
+
+  drops.push({ el, x, y: -40, speed, type: isOil ? 'oil' : 'clean', caught: false });
+}
+
+function scheduleSpawn() {
+  if (!running) return;
+  spawnDrop();
+  const progress = 1 - (timeLeft / GAME_LENGTH);
+  const interval = SPAWN_INTERVAL_START - (SPAWN_INTERVAL_START - SPAWN_INTERVAL_MIN) * progress;
+  spawnTimer = setTimeout(scheduleSpawn, interval);
+}
+
+// ---- Floating "+10" / "-1" feedback text ----
+function showFloatText(x, y, text, isGood) {
+  const el = document.createElement('div');
+  el.className = 'float-text ' + (isGood ? 'good' : 'bad');
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  root.appendChild(el);
+  setTimeout(() => el.remove(), 700);
+}
+
+// ---- Milestone banner ----
+function checkMilestones() {
+  for (const [threshold, msg] of MILESTONES) {
+    if (score >= threshold && !hitMilestones.has(threshold)) {
+      hitMilestones.add(threshold);
+      milestoneEl.textContent = msg;
+      milestoneEl.classList.add('show');
+      setTimeout(() => milestoneEl.classList.remove('show'), 2200);
+      break; // only show one at a time
+    }
+  }
+}
+
+// ---- Lives display ----
+function updateLivesDisplay() {
+  livesPips.forEach((pip, i) => {
+    pip.classList.toggle('lost', i >= lives);
+  });
+}
+
+// ---- Main animation loop ----
+function tick() {
+  if (!running) return;
+
+  const catcherTop = root.clientHeight - 30 - 60; // catcher sits ~60px tall, 30px from bottom
+  const catcherLeft = catcherX - 28;
+  const catcherRight = catcherX + 28;
+
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i];
+    d.y += d.speed;
+    d.el.style.top = d.y + 'px';
+
+    // Collision check: drop overlaps catcher's horizontal + vertical range
+    if (!d.caught && d.y + 32 >= catcherTop && d.y <= catcherTop + 60 &&
+        d.x >= catcherLeft - 13 && d.x <= catcherRight + 13) {
+      d.caught = true;
+      if (d.type === 'clean') {
+        score += POINTS_PER_DROP;
+        scoreVal.textContent = score;
+        showFloatText(d.x, d.y, '+' + POINTS_PER_DROP, true);
+        checkMilestones();
+      } else {
+        lives -= 1;
+        updateLivesDisplay();
+        showFloatText(d.x, d.y, '−1 life', false);
+        if (lives <= 0) {
+          endGame('lives');
+        }
+      }
+      d.el.remove();
+      drops.splice(i, 1);
+      continue;
+    }
+
+    // Drop reached the ground (missed)
+    if (d.y > root.clientHeight) {
+      d.el.remove();
+      drops.splice(i, 1);
+    }
+  }
+
+  rafId = requestAnimationFrame(tick);
+}
+
+// ---- Countdown timer ----
+function startCountdown() {
+  countdownTimer = setInterval(() => {
+    timeLeft -= 1;
+    timeVal.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      endGame('time');
+    }
+  }, 1000);
+}
+
+// ---- Start / End / Reset ----
+function startGame() {
+  score = 0;
+  lives = START_LIVES;
+  timeLeft = GAME_LENGTH;
+  hitMilestones = new Set();
+  scoreVal.textContent = 0;
+  timeVal.textContent = GAME_LENGTH;
+  updateLivesDisplay();
+  drops.forEach(d => d.el.remove());
+  drops = [];
+
+  startOverlay.style.display = 'none';
+  endOverlay.style.display = 'none';
+  running = true;
+
+  scheduleSpawn();
+  startCountdown();
+  rafId = requestAnimationFrame(tick);
+}
+
+function endGame(reason) {
+  running = false;
+  clearTimeout(spawnTimer);
+  clearInterval(countdownTimer);
+  cancelAnimationFrame(rafId);
+
+  finalScoreEl.textContent = score;
+  endReasonEl.textContent = reason === 'lives'
+    ? "game over — out of clean water"
+    : "points collected";
+  endMessageEl.textContent = score >= 200
+    ? "Great catch rate! In the real world, consistent giving works the same way — small, steady drops add up to real water access."
+    : "Every drop counts — just like every donation. Try again and see how high you can climb.";
+
+  endOverlay.style.display = 'flex';
+}
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+// Initial catcher position
+setCatcherX(window.innerWidth / 2);
+updateLivesDisplay();
+
+window.addEventListener('resize', () => setCatcherX(catcherX));
+</script>
+
+</body>
+</html>
