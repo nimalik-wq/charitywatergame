@@ -221,7 +221,7 @@
     width: 26px;
     height: 32px;
     clip-path: path("M13 0 C 13 0, 26 20, 26 24 C 26 29, 20 32, 13 32 C 6 32, 0 29, 0 24 C 0 20, 13 0, 13 0 Z");
-    z-index: 15;
+    z-index: 10;
   }
   .drop.clean {
     background: linear-gradient(160deg, #B8F3EF 0%, var(--teal) 55%, var(--teal-dark) 100%);
@@ -237,7 +237,7 @@
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: 18px;
-    z-index: 25;
+    z-index: 50;
     pointer-events: none;
     animation: floatUp 0.7s ease-out forwards;
   }
@@ -325,11 +325,7 @@
   <!-- Start overlay -->
   <div class="overlay" id="start-overlay">
     <div class="brand-row">
-      <svg class="jerrycan-icon" viewBox="0 0 34 40" fill="none">
-        <path d="M8 6h18v4h3a2 2 0 012 2v22a3 3 0 01-3 3H6a3 3 0 01-3-3V12a2 2 0 012-2h3V6z" fill="#FFC700"/>
-        <rect x="12" y="1" width="10" height="6" rx="1.5" fill="#FFC700"/>
-        <rect x="6" y="18" width="22" height="3" fill="#007873" opacity="0.35"/>
-      </svg>
+      <img class="jerrycan-icon" src="favicon.ico" alt="Jug Logo">
       <span class="brand-name">charity: water</span>
     </div>
     <h1>Water Drop</h1>
@@ -346,10 +342,7 @@
   <!-- End overlay -->
   <div class="overlay" id="end-overlay">
     <div class="brand-row">
-      <svg class="jerrycan-icon" viewBox="0 0 34 40" fill="none">
-        <path d="M8 6h18v4h3a2 2 0 012 2v22a3 3 0 01-3 3H6a3 3 0 01-3-3V12a2 2 0 012-2h3V6z" fill="#FFC700"/>
-        <rect x="12" y="1" width="10" height="6" rx="1.5" fill="#FFC700"/>
-      </svg>
+      <img class="jerrycan-icon" src="favicon.ico" alt="Jug Logo">
       <span class="brand-name">charity: water</span>
     </div>
     <div class="score-big" id="final-score">0</div>
@@ -472,7 +465,7 @@ function showFloatText(x, y, text, isGood) {
   el.className = 'float-text ' + (isGood ? 'good' : 'bad');
   el.textContent = text;
   el.style.left = x + 'px';
-  el.style.top = y + 'px';
+  el.style.top = (y - 50) + 'px';
   root.appendChild(el);
   setTimeout(() => el.remove(), 700);
 }
